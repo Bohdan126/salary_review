@@ -1,0 +1,90 @@
+<?php
+
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\CloseModalDialogCommand;
+use Drupal\Core\Ajax\RemoveCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_views_data_alter().
+ */
+function ajax_popup_views_data_alter(array &$data) {
+  $data['node']['edit_node']['field']['id'] = 'ajax_entity_link_edit';
+  $data['node']['delete_node']['field']['id'] = 'ajax_entity_link_delete';
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ajax_popup_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if ($form_id === 'node_article_delete_form' && !empty($_GET['modal'])) {
+    $form['actions']['cancel'] = [
+      '#type' => 'button',
+      '#name' => 'cancel',
+      '#value' => t('Cancel'),
+      '#weight' => 10,
+      '#limit_validation_errors' => [],
+      '#ajax' => [
+        'callback' => 'ajax_popup_close_dialog',
+      ],
+    ];
+
+    $form['actions']['submit']['#ajax']['callback'] = 'ajax_popup_delete_node';
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ajax_popup_form_node_form_alter(&$form, FormStateInterface $form_state) {
+  if (!empty($_GET['modal'])) {
+    unset($form['actions']['delete']);
+
+    if (isset($form['actions']['preview'])) {
+      unset($form['actions']['preview']);
+    }
+
+    $form['actions']['cancel'] = [
+      '#type' => 'button',
+      '#name' => 'cancel',
+      '#value' => t('Cancel'),
+      '#weight' => 10,
+      '#limit_validation_errors' => [],
+      '#ajax' => [
+        'callback' => 'ajax_popup_close_dialog',
+      ],
+    ];
+
+    $form['actions']['submit']['#ajax']['callback'] = 'ajax_popup_save_node';
+  }
+}
+
+function ajax_popup_save_node($form, FormStateInterface $form_state) {
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $form_state->getFormObject()->getEntity();
+  $response = new AjaxResponse();
+  $response->addCommand(new CloseModalDialogCommand());
+
+  $new_link = $node->toLink()->toRenderable();
+  $response->addCommand(new ReplaceCommand(".node-row-{$node->id()} .views-field-title a", $new_link));
+
+  return $response;
+}
+
+function ajax_popup_delete_node($form, FormStateInterface $form_state) {
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $form_state->getFormObject()->getEntity();
+  $response = new AjaxResponse();
+  $response->addCommand(new CloseModalDialogCommand());
+  $response->addCommand(new RemoveCommand(".node-row-{$node->id()}"));
+
+  return $response;
+}
+
+function ajax_popup_close_dialog($form, FormStateInterface $form_state) {
+  $response = new AjaxResponse();
+  $response->addCommand(new CloseModalDialogCommand());
+
+  return $response;
+}

@@ -1,0 +1,5 @@
+name: Ajax Popup
+description: Custom popup for edit and delete content
+type: module
+core: 8.x
+package: Custom
