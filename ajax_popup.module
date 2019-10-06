@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Hooks for ajax_popup module.
+ */
+
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\RemoveCommand;
@@ -17,7 +22,7 @@ function ajax_popup_views_data_alter(array &$data) {
 /**
  * Implements hook_form_alter().
  */
-function ajax_popup_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function ajax_popup_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   if ($form_id === 'node_article_delete_form' && !empty($_GET['modal'])) {
     $form['actions']['cancel'] = [
       '#type' => 'button',
@@ -60,6 +65,9 @@ function ajax_popup_form_node_form_alter(&$form, FormStateInterface $form_state)
   }
 }
 
+/**
+ * Function to save node using ajax.
+ */
 function ajax_popup_save_node($form, FormStateInterface $form_state) {
   /** @var \Drupal\node\NodeInterface $node */
   $node = $form_state->getFormObject()->getEntity();
@@ -72,16 +80,24 @@ function ajax_popup_save_node($form, FormStateInterface $form_state) {
   return $response;
 }
 
+/**
+ * Function to delete node using ajax.
+ */
 function ajax_popup_delete_node($form, FormStateInterface $form_state) {
   /** @var \Drupal\node\NodeInterface $node */
   $node = $form_state->getFormObject()->getEntity();
+  $view = views_embed_view('ajax_nodes', 'page_1');
   $response = new AjaxResponse();
   $response->addCommand(new CloseModalDialogCommand());
   $response->addCommand(new RemoveCommand(".node-row-{$node->id()}"));
+  $response->addCommand(new ReplaceCommand(".view-ajax-nodes", $view));
 
   return $response;
 }
 
+/**
+ * Function to close dialog using ajax.
+ */
 function ajax_popup_close_dialog($form, FormStateInterface $form_state) {
   $response = new AjaxResponse();
   $response->addCommand(new CloseModalDialogCommand());
