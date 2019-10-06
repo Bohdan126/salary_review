@@ -15,8 +15,23 @@ use Drupal\Core\Form\FormStateInterface;
  * Implements hook_views_data_alter().
  */
 function ajax_popup_views_data_alter(array &$data) {
-  $data['node']['edit_node']['field']['id'] = 'ajax_entity_link_edit';
-  $data['node']['delete_node']['field']['id'] = 'ajax_entity_link_delete';
+  $data['node']['ajax_edit_node'] = [
+    'title' => t('Ajax edit node'),
+    'field' => [
+      'title' => t('Ajax edit node'),
+      'help' => t('Provide an edit link to the Content by using ajax.'),
+      'id' => 'ajax_entity_link_edit',
+    ],
+  ];
+
+  $data['node']['ajax_delete_node'] = [
+    'title' => t('Ajax delete node'),
+    'field' => [
+      'title' => t('Ajax delete node'),
+      'help' => t('Provide a delete link to the Content by using ajax.'),
+      'id' => 'ajax_entity_link_delete',
+    ],
+  ];
 }
 
 /**
