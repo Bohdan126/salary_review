@@ -11,6 +11,7 @@ use Drupal\Core\Ajax\RemoveCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormStateInterface;
 
+
 /**
  * Implements hook_views_data_alter().
  */
@@ -118,4 +119,23 @@ function ajax_popup_close_dialog($form, FormStateInterface $form_state) {
   $response->addCommand(new CloseModalDialogCommand());
 
   return $response;
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for views templates.
+ */
+function ajax_popup_preprocess_views_view(&$variables) {
+  $view = $variables['view'];
+  if ($view->id() == 'ajax_nodes' && $view->current_display == 'page_2') {
+    $view_route = "view.{$view->id()}.{$view->current_display}";
+    $variables['pager']['#route_name'] = $view_route;
+    ajax_popup_preprocess_pager($variables);
+  }
+}
+
+/**
+ * Function to preprocess pager for ajax_popup view.
+ */
+function ajax_popup_preprocess_pager(&$variables) {
+  $variables['pager']['#route_name'] = 'view.ajax_nodes.page_1';
 }
